@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: ./src
+      dockerfile: KanbanFlow.API/Dockerfile
+    container_name: kanban_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - sqlite_data:/app/data  # ← Volume для SQLite файла
+    networks:
+      - kanban-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: kanban_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - kanban-network
+    restart: unless-stopped
+
+networks:
+  kanban-network:
+    driver: bridge
+
+volumes:
+  sqlite_data:  # ← Объявляем volume

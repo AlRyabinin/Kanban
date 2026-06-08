@@ -1,0 +1,33 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Build
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vs/
+.idea/
+*.swp
+.DS_Store
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Database
+sqlite_data/
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
