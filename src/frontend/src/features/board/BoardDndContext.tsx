@@ -19,7 +19,6 @@ import {
 } from '@dnd-kit/sortable';
 import type { BoardWithColumnsDto, ColumnWithTasksDto, TaskDto } from '../../types';
 
-//  Создаём контекст для подсветки колонки
 export const ActiveColumnContext = createContext<string | null>(null);
 
 interface BoardDndContextProps {
@@ -81,7 +80,6 @@ export function BoardDndContext({
     const overId = over.id as string;
     const cleanOverId = overId.replace('-empty', '');
 
-    // Проверяем, является ли over колонкой
     const isOverColumn = board.columns.some((col) => col.id === cleanOverId);
     
     if (isOverColumn) {
@@ -110,7 +108,6 @@ export function BoardDndContext({
 
     if (activeId === overId) return;
 
-    // === ПЕРЕТАСКИВАНИЕ КОЛОНКИ ===
     const isColumn = board.columns.some((col) => col.id === activeId);
     
     if (isColumn) {
@@ -124,7 +121,6 @@ export function BoardDndContext({
       return;
     }
 
-    // === ПЕРЕТАСКИВАНИЕ ЗАДАЧИ ===
     const sourceColumn = board.columns.find((col) =>
       col.tasks.some((t) => t.id === activeId)
     );

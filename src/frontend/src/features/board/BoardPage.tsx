@@ -131,49 +131,36 @@ export function BoardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" richColors />
-      
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-full items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-4">
-            <a href="/" className="text-sm text-gray-500 hover:text-gray-700">
-              ← Все доски
-            </a>
-            <h1 className="text-xl font-bold text-gray-900">{board.name}</h1>
+
+      <main className="h-full overflow-x-auto overflow-y-auto p-6">
+        <BoardDndContext
+          board={board}
+          onTaskDragEnd={handleTaskDragEnd}
+          onColumnDragEnd={handleColumnDragEnd}
+        >
+          <div className="flex gap-6 h-full">
+            {board.columns.map((column) => (
+              <ColumnDraggable
+                key={column.id}
+                column={column}
+                onCreateTask={() => handleCreateTask(column.id)}
+                onDeleteTask={handleDeleteTask}
+                onEditTask={handleEditTask}
+                onEditColumn={handleEditColumn}
+                onDeleteColumn={handleDeleteColumn}
+              />
+            ))}
+
+            <button
+              onClick={() => setIsColumnModalOpen(true)}
+              className="flex-shrink-0 w-80 h-14 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-gray-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              <span className="font-medium">Добавить колонку</span>
+            </button>
           </div>
-        </div>
-      </header>
-
-      {/* Kanban Board с BoardDndContext */}
-      <main className="flex h-[calc(100vh-73px)] overflow-x-auto p-6">
-  <BoardDndContext
-    board={board}
-    onTaskDragEnd={handleTaskDragEnd}
-    onColumnDragEnd={handleColumnDragEnd}
-  >
-    <div className="flex gap-6" style={{ height: 'calc(100vh - 121px)' }}>
-      {board.columns.map((column) => (
-        <ColumnDraggable
-          key={column.id}
-          column={column}
-          onCreateTask={() => handleCreateTask(column.id)}
-          onDeleteTask={handleDeleteTask}
-          onEditTask={handleEditTask}
-          onEditColumn={handleEditColumn}
-          onDeleteColumn={handleDeleteColumn}
-        />
-      ))}
-
-      <button
-        onClick={() => setIsColumnModalOpen(true)}
-        className="flex h-14 w-80 flex-shrink-0 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-gray-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
-      >
-        <Plus className="h-5 w-5" />
-        <span className="font-medium">Добавить колонку</span>
-      </button>
-    </div>
-  </BoardDndContext>
-</main>
+        </BoardDndContext>
+      </main>
 
       <CreateTaskModal
         isOpen={isTaskModalOpen}

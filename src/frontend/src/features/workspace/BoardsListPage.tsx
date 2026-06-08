@@ -1,129 +1,124 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import CreateBoardModal from './CreateBoardModal';
 import api from '../../lib/api';
-import type { BoardInfo } from '../../types';
-import { Card, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { LayoutGrid, Plus, Trash2 } from 'lucide-react';
-import { CreateBoardModal } from './CreateBoardModal';
-import { Toaster, toast } from 'sonner';
 
-/**
- * Страница со списком всех досок.
- * Загружает доски с backend и отображает их в виде карточек.
- */
-export function BoardsListPage() {
-  const queryClient = useQueryClient();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface Board {
+  id: string;
+  name: string;
+  createdAt: string;
+}
 
-  const { data: boards, isLoading, error } = useQuery<BoardInfo[]>({
-    queryKey: ['boards'],
-    queryFn: async () => {
-      const response = await api.get<BoardInfo[]>('/Boards');
-      return response.data;
-    },
-  });
+export default function BoardsListPage() {
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // Мутация удаления доски
-  const deleteMutation = useMutation({
-    mutationFn: async (boardId: string) => {
-      await api.delete(`/Boards/${boardId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['boards'] });
-      toast.success('Доска удалена');
-    },
-    onError: () => {
-      toast.error('Не удалось удалить доску');
-    },
-  });
+  useEffect(() => {
+    loadBoards();
+    
+    const handleOpenModal = () => setIsCreateModalOpen(true);
+    window.addEventListener('openCreateBoardModal', handleOpenModal);
+    
+    return () => {
+      window.removeEventListener('openCreateBoardModal', handleOpenModal);
+    };
+  }, []);
 
-  const handleDelete = (e: React.MouseEvent, boardId: string, boardName: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (window.confirm(`Вы уверены, что хотите удалить доску "${boardName}"?`)) {
-      deleteMutation.mutate(boardId);
+  const loadBoards = async () => {
+    try {
+      const response = await api.get('/boards');
+      setBoards(response.data);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Ошибка загрузки досок');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">Загрузка досок...</p>
-      </div>
-    );
-  }
+  const handleBoardCreated = (boardId: string) => {
+    window.location.href = `/board/${boardId}`;
+  };
 
-  if (error) {
+  const handleDeleteBoard = async (boardId: string, boardName: string) => {
+    const confirmed = window.confirm(
+      `Вы уверены, что хотите удалить доску "${boardName}"? Все колонки и задачи будут удалены.`
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+      await api.delete(`/boards/${boardId}`);
+      setBoards(boards.filter(b => b.id !== boardId));
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Ошибка при удалении доски');
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-red-500">Ошибка загрузки досок. Убедитесь, что backend запущен.</p>
+      <div className="p-6">
+        <p className="text-gray-500">Загрузка...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Toaster position="top-right" richColors />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Мои доски</h1>
 
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <LayoutGrid className="h-6 w-6 text-blue-600" />
-            <h1 className="text-xl font-bold text-gray-900">KanbanFlow</h1>
-          </div>
-          <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Новая доска
-          </Button>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
         </div>
-      </header>
+      )}
 
-      {/* Content */}
-      <main className="mx-auto max-w-7xl px-6 py-8">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">Мои доски</h2>
+      {boards.length === 0 ? (
+        <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
+          <div className="text-4xl mb-4">📋</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет досок</h3>
+          <p className="text-gray-500">Создайте первую доску, чтобы начать работу</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {boards.map((board) => (
+            <div
+              key={board.id}
+              className="relative group bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
+            >
+              <Link to={`/board/${board.id}`} className="block p-4">
+                <h3 className="text-base font-semibold text-gray-900 mb-1">
+                  {board.name}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Открыть доску →
+                </p>
+              </Link>
+              
+              {/* Кнопка удаления */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDeleteBoard(board.id, board.name);
+                }}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
+                title="Удалить доску"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
-        {boards && boards.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {boards.map((board) => (
-              <div key={board.id} className="group relative">
-                <Link to={`/board/${board.id}`}>
-                  <Card className="transition-all hover:shadow-md cursor-pointer">
-                    <CardHeader>
-                      <CardTitle>{board.name}</CardTitle>
-                      <p className="text-sm text-gray-500">Открыть доску →</p>
-                    </CardHeader>
-                  </Card>
-                </Link>
-
-                {/* Кнопка удаления — появляется при наведении */}
-                <button
-                  onClick={(e) => handleDelete(e, board.id, board.name)}
-                  className="absolute right-3 top-3 rounded p-1.5 text-gray-400 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
-                  title="Удалить доску"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
-            <LayoutGrid className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">Нет досок</h3>
-            <p className="mt-2 text-gray-500">
-              Создайте первую доску, чтобы начать работу
-            </p>
-          </div>
-        )}
-      </main>
-
-      {/* Модальное окно создания доски */}
       <CreateBoardModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleBoardCreated}
       />
     </div>
   );

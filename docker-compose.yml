@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - sqlite_data:/app/data  # ← Volume для SQLite файла
+      - sqlite_data:/app/data
     networks:
       - kanban-network
     restart: unless-stopped
@@ -33,4 +33,4 @@ networks:
     driver: bridge
 
 volumes:
-  sqlite_data:  # ← Объявляем volume
+  sqlite_data:  

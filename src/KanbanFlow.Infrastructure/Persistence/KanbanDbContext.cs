@@ -1,14 +1,15 @@
 ﻿using KanbanFlow.Application.Interfaces;
 using KanbanFlow.Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace KanbanFlow.Infrastructure.Persistence;
 
 /// <summary>
 /// Контекст базы данных для приложения KanbanFlow.
-/// Реализует интерфейс IApplicationDbContext, определённый в слое Application.
+/// Наследуется от IdentityDbContext<User> для поддержки аутентификации.
 /// </summary>
-public class KanbanDbContext : DbContext, IApplicationDbContext
+public class KanbanDbContext : IdentityDbContext<User>, IApplicationDbContext
 {
     public KanbanDbContext(DbContextOptions<KanbanDbContext> options) : base(options) { }
 
@@ -32,5 +33,12 @@ public class KanbanDbContext : DbContext, IApplicationDbContext
 
         builder.Entity<KanbanTask>()
             .HasIndex(t => new { t.ColumnId, t.OrderIndex });
+
+        // Связь Board с User
+        builder.Entity<Board>()
+            .HasOne(b => b.User)
+            .WithMany(u => u.Boards)
+            .HasForeignKey(b => b.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

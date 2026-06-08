@@ -1,4 +1,6 @@
 ﻿
+using System.Text.Json.Serialization;
+
 namespace KanbanFlow.Domain.Entities;
 
 /// <summary>
@@ -30,6 +32,7 @@ public class Column : BaseEntity
     /// <summary>
     /// Навигационное свойство: доска, которой принадлежит колонка.
     /// </summary>
+    [JsonIgnore]
     public Board Board { get; set; } = null!;
 
     /// <summary>

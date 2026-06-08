@@ -1,30 +1,35 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryProvider } from './providers/QueryProvider';
-import { BoardPage } from './features/board/BoardPage';
-import { BoardsListPage } from './features/workspace/BoardsListPage';
-import { Toaster } from 'sonner';
+import { AuthProvider } from './contexts/AuthContext';
+import Login from './components/pages/Login';
+import Register from './components/pages/Register';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
+import BoardsListPage from './features/workspace/BoardsListPage';
+import { BoardPage } from './features/board/BoardPage'
 
-/**
- * Корневой компонент приложения.
- * Настраивает роутинг и провайдеры.
- */
 function App() {
   return (
-    <QueryProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
-          {/* Главная страница - список досок */}
-          <Route path="/" element={<BoardsListPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           
-          {/* Страница конкретной доски */}
-          <Route path="/board/:boardId" element={<BoardPage />} />
+          <Route 
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/boards" element={<BoardsListPage />} />
+            <Route path="/board/:boardId" element={<BoardPage />} />
+          </Route>
           
-          {/* Редирект для неизвестных маршрутов */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/" element={<Navigate to="/boards" replace />} />
         </Routes>
-        <Toaster position="top-right" richColors />
-      </BrowserRouter>
-    </QueryProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

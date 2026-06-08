@@ -4,8 +4,10 @@ using KanbanFlow.Application.Features.Boards.Queries.GetBoardWithColumns;
 using KanbanFlow.Application.Features.Tasks.Commands.CreateTask;
 using KanbanFlow.Application.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace KanbanFlow.API.Controllers;
 
@@ -15,6 +17,7 @@ namespace KanbanFlow.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class BoardsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -40,8 +43,16 @@ public class BoardsController : ControllerBase
     [ProducesResponseType(typeof(List<object>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<object>>> GetAllBoards(CancellationToken cancellationToken)
     {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         var boards = await _context.Boards
-            .Select(b => new { b.Id, b.Name })
+            .Where(b => b.UserId == userId) 
+            .Select(b => new
+            {
+                b.Id,
+                b.Name,
+                b.CreatedAt
+            })
             .ToListAsync(cancellationToken);
 
         return Ok(boards);
@@ -73,11 +84,19 @@ public class BoardsController : ControllerBase
     /// Создать новую доску.
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateBoard(CreateBoardCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateBoard([FromBody] CreateBoardCommand command, CancellationToken cancellationToken)
     {
-        var boardId = await _mediator.Send(command, cancellationToken);
-        return Created($"/api/Boards/{boardId}", boardId);
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if(string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new { message = "Пользователь не аутентифицирован" });
+        }
+
+        var commandWithUser = new CreateBoardCommand(command.Name, userId);
+
+        var board = await _mediator.Send(commandWithUser, cancellationToken);
+        return Ok(board);
     }
 
     /// <summary>

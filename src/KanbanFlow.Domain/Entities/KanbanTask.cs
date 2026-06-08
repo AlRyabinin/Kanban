@@ -1,4 +1,6 @@
-﻿namespace KanbanFlow.Domain.Entities;
+﻿using System.Text.Json.Serialization;
+
+namespace KanbanFlow.Domain.Entities;
 
 /// <summary>
 /// Сущность, представляющая задачу на Канбан-доске.
@@ -23,6 +25,7 @@ public class KanbanTask : BaseEntity
     /// <summary>
     /// Навигационное свойство: колонка, содержащая данную задачу.
     /// </summary>
+    [JsonIgnore]
     public Column Column { get; set; } = null!;
 
     /// <summary>
