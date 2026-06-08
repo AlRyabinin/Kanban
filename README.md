@@ -1,8 +1,8 @@
 # KanbanFlow
 
-A modern Kanban board application for task management, built with .NET 8 and React.
+Современное приложение с канбан-доской для управления задачами, созданное с использованием .NET 8 и React.
 
-## 📸 Screenshots
+## 📸 Скриншоты
 
 ![Main Page](./docs/MainPage.jpg)
 *Главная страница с досками*
@@ -10,44 +10,42 @@ A modern Kanban board application for task management, built with .NET 8 and Rea
 ![Board View](./docs/Board.jpg)
 *Вид доски с задачами*
 
-## 🚀 Quick Start
+## 🚀 Быстрый старт
 
-### With Docker
+### С помощью Docker
 
-git clone https://github.com/AlRyabinin/KanbanFlow.git
+```bash```
+
+git clone https://github.com/AlRyabinin/Kanban.git
 
 cd KanbanFlow
 
-```bash```docker-compose up -d --build
+docker-compose up -d --build
 
-##  Features
+##  Возможности
 
-- 📋 Create and manage multiple boards
-- 📊 Drag-and-drop tasks between columns
-- 🎨 Customizable column colors
-- ✏️ Full CRUD operations for boards, columns, and tasks
-- 🔄 Real-time column and task reordering
-- 🐳 Docker support for easy deployment
+- 📋 Создание и управление несколькими досками
+- 📊 Перетаскивание задач между колонками (drag-and-drop)
+- 🎨 Настраиваемые цвета колонок
+- ✏️ Полный набор CRUD-операций для досок, колонок и задач
+- 🔄 Изменение порядка колонок и задач в реальном времени
+- 🐳 Поддержка Docker для простого развертывания
 
-## 🛠️ Tech Stack
+## 🛠️ Технологический стек
 
-### Backend
-- **.NET 8** with ASP.NET Core
-- **Entity Framework Core** with SQLite
-- **MediatR** for CQRS pattern
-- **Clean Architecture** (Domain, Application, Infrastructure, API)
+### Бэкенд
+- **.NET 8** с ASP.NET Core
+- **Entity Framework Core** с SQLite
+- **MediatR** для реализации паттерна CQRS
+- **Чистая архитектура** (Domain, Application, Infrastructure, API)
 
-### Frontend
-- **React 18** with TypeScript
-- **TanStack Query** for server state management
-- **dnd-kit** for drag-and-drop
-- **Tailwind CSS** for styling
-- **Lucide React** for icons
+### Фронтенд
+- **React 18** с TypeScript
+- **TanStack Query** для управления состоянием на стороне сервера
+- **dnd-kit** для реализации перетаскивания
+- **Tailwind CSS** для стилизации
+- **Lucide React** для иконок
 
 ### Infrastructure
 - **Docker** & **Docker Compose**
-- **Nginx** as reverse proxy
-
-## 🏗️ Architecture
-
-The project follows **Clean Architecture** principles
+- **Nginx** в качестве обратного прокси-сервера
